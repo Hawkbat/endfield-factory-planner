@@ -2,3 +2,4 @@
 /js/
 /coverage/
 *.tsbuildinfo
+/.gh-pages/
