@@ -1,0 +1,13 @@
+import { jsxDEV as _jsxDEV } from "react/jsx-dev-runtime";
+const _jsxFileName = "E:/Projects/endfield-factory-planner/ts/components/factory/EditModeGuidance.tsx";
+import { useEdit } from "../../contexts/edit.js";
+import { useLocalization } from "../../contexts/localization.js";
+import { EditMode } from "../../types/editMode.js";
+export function EditModeGuidance() {
+    const { editMode } = useEdit();
+    const { ui } = useLocalization();
+    if (editMode === EditMode.MANIPULATE) {
+        return null;
+    }
+    return (_jsxDEV("div", { className: "edit-mode-guidance", children: [editMode === EditMode.PATH_EDITING && (_jsxDEV("div", { className: "guidance-panel path-editing", children: [_jsxDEV("div", { className: "guidance-title", children: ui.pathEditingInstructions }, void 0, false, { fileName: _jsxFileName, lineNumber: 17, columnNumber: 21 }, this), _jsxDEV("ul", { className: "guidance-list", children: [_jsxDEV("li", { children: ui.pathEditingDoubleClickToFinish }, void 0, false, { fileName: _jsxFileName, lineNumber: 19, columnNumber: 25 }, this), _jsxDEV("li", { children: ui.pathEditingDoubleClickPortToConnect }, void 0, false, { fileName: _jsxFileName, lineNumber: 20, columnNumber: 25 }, this), _jsxDEV("li", { children: ui.pathEditingBackspaceToUndo }, void 0, false, { fileName: _jsxFileName, lineNumber: 21, columnNumber: 25 }, this), _jsxDEV("li", { children: ui.pathEditingEscapeToCancel }, void 0, false, { fileName: _jsxFileName, lineNumber: 22, columnNumber: 25 }, this), _jsxDEV("li", { className: "guidance-hint", children: ui.pathEditingResumeFromEnd }, void 0, false, { fileName: _jsxFileName, lineNumber: 23, columnNumber: 25 }, this)] }, void 0, true, { fileName: _jsxFileName, lineNumber: 18, columnNumber: 21 }, this)] }, void 0, true, { fileName: _jsxFileName, lineNumber: 15, columnNumber: 53 }, this)), editMode === EditMode.FIXTURE_PLACING && (_jsxDEV("div", { className: "guidance-panel fixture-placing", children: [_jsxDEV("div", { className: "guidance-title", children: ui.fixtureEditingInstructions }, void 0, false, { fileName: _jsxFileName, lineNumber: 29, columnNumber: 21 }, this), _jsxDEV("ul", { className: "guidance-list", children: [_jsxDEV("li", { children: ui.fixtureEditingClickToPlace }, void 0, false, { fileName: _jsxFileName, lineNumber: 31, columnNumber: 25 }, this), _jsxDEV("li", { children: ui.fixtureEditingEscapeToCancel }, void 0, false, { fileName: _jsxFileName, lineNumber: 32, columnNumber: 25 }, this)] }, void 0, true, { fileName: _jsxFileName, lineNumber: 30, columnNumber: 21 }, this)] }, void 0, true, { fileName: _jsxFileName, lineNumber: 27, columnNumber: 56 }, this))] }, void 0, true, { fileName: _jsxFileName, lineNumber: 13, columnNumber: 13 }, this));
+}
