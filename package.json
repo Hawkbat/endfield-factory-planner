@@ -1,0 +1,27 @@
+{
+    "name": "endfield-factory-planner",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b tsconfig.json",
+        "build:watch": "tsc -b tsconfig.json --watch",
+        "typecheck": "tsc -b tsconfig.json --noEmit",
+        "check-imports": "madge ts --extensions ts,tsx --warning --circular",
+        "start": "serve -s .",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "test:typecheck": "tsc -b tsconfig.test.json --noEmit"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.5",
+        "@types/react": "^19.2.10",
+        "@types/react-dom": "^19.2.3",
+        "@vitest/coverage-v8": "^4.0.18",
+        "lucide-react": "^0.563.0",
+        "madge": "^8.0.0",
+        "serve": "^14.2.5",
+        "typescript": "^5.9.3",
+        "vitest": "^3.2.4"
+    }
+}

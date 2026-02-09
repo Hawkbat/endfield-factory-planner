@@ -1,0 +1,16 @@
+{
+    "extends": "./tsconfig.json",
+    "include": [
+        "tests/**/*.ts",
+        "ts/**/*.ts"
+    ],
+    "compilerOptions": {
+        "rootDir": ".",
+        "noEmit": true,
+        "types": ["vitest/globals", "node"],
+        "lib": ["DOM", "ESNext"],
+        // Override main tsconfig settings for test compatibility
+        "module": "esnext",
+        "moduleResolution": "bundler"
+    }
+}

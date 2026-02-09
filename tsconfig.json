@@ -1,0 +1,25 @@
+{
+    "include": [
+        "ts/**/*.ts",
+        "ts/**/*.tsx"
+    ],
+    "compilerOptions": {
+        "rootDir": "ts",
+        "outDir": "js",
+        "target": "esnext",
+        "module": "nodenext",
+        "moduleResolution": "nodenext",
+        "lib": ["DOM", "ESNext"],
+        "types": [],
+        "strict": true,
+        "verbatimModuleSyntax": true,
+        "esModuleInterop": true,
+        "allowArbitraryExtensions": false,
+        "rewriteRelativeImportExtensions": true,
+        "forceConsistentCasingInFileNames": true,
+        "jsx": "react-jsxdev",
+        "paths": {
+            "*": ["./invalid.ts"]
+        }
+    }
+}
