@@ -2,6 +2,11 @@
 
 A web app for planning factory layouts in the game Arknights: Endfield.
 
+### Links
+
+- Repository: https://github.com/Hawkbat/endfield-factory-planner
+- Issues: https://github.com/Hawkbat/endfield-factory-planner/issues
+
 ### Architecture
 
 This application is a minimal-dependency single-page web app built with React and TypeScript. It doesn't use a bundler; instead, it relies on modern browsers' native support for ES modules, and includes dependencies via CDN links.

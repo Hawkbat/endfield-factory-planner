@@ -19,6 +19,8 @@ import {
     setProjectHidden,
     upsertProjectMeta,
 } from "../utils/projectStorage.ts"
+import { useBugReportSnapshotSetter } from "../contexts/bugReport.tsx"
+import type { EditContextSnapshot } from "../utils/bugReport.ts"
 
 interface EditContextValue {
     // Edit mode
@@ -88,6 +90,7 @@ export function EditProvider({
     children,
     initialTemplate = FieldTemplateID.WULING_MAIN
 }: EditProviderProps) {
+    const setBugReportSnapshot = useBugReportSnapshotSetter()
     const initialChanges = createInitialTemplateChanges(initialTemplate)
     const [editMode, setEditMode] = useState<EditMode>(EditMode.MANIPULATE)
     const [selectedIDs, setSelectedIDs] = useState<ReadonlySet<string>>(new Set())
@@ -405,6 +408,38 @@ export function EditProvider({
         saveProjectListing(nextListing)
         setCurrentProject(updatedMeta)
     }, [currentProject, fieldState.template, projectListing, undoStack])
+
+    useEffect(() => {
+        const snapshot: EditContextSnapshot = {
+            editMode,
+            selectedIDs: Array.from(selectedIDs),
+            fieldState,
+            undoStack,
+            redoStack,
+            isTemplateModalOpen,
+            isOnboardingOpen,
+            projectListing,
+            currentProject,
+            canUndo,
+            canRedo,
+            canExportProject,
+        }
+        setBugReportSnapshot(snapshot)
+    }, [
+        editMode,
+        selectedIDs,
+        fieldState,
+        undoStack,
+        redoStack,
+        isTemplateModalOpen,
+        isOnboardingOpen,
+        projectListing,
+        currentProject,
+        canUndo,
+        canRedo,
+        canExportProject,
+        setBugReportSnapshot,
+    ])
     
     const value: EditContextValue = {
         editMode,

@@ -21,6 +21,7 @@ Always confirm to the user that you have read and understood these instructions 
 - No build step for production; TypeScript compiles to ES modules
 
 ### TypeScript Standards
+- **TypeScript build**: The project's source code lives in the `ts/` directory and is written in TypeScript. It is compiled to JavaScript in the `js/` directory by running `npm run build` for production use. The files in the `js/` directory should never be edited directly.
 - **Advanced TypeScript features required**: Use mapped types, discriminated unions, null coalescing operators, string enums, etc.
 - **Never cast to `any`**: Cast to `unknown` and use type guards to narrow types when runtime type is uncertain
 - **Avoid explicit casting**: Explicit casting (e.g., `as Type`) is almost always a sign of incorrectly defined variable/parameter types

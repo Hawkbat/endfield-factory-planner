@@ -276,6 +276,16 @@ export interface Localization {
     fixtureEditingInstructions: string
     fixtureEditingClickToPlace: string
     fixtureEditingEscapeToCancel: string
+    bugReportTitle: string
+    bugReportDescription: string
+    bugReportDetailsLabel: string
+    bugReportCopyButton: string
+    bugReportOpenIssueButton: string
+    bugReportReloadButton: string
+    bugReportCopySuccess: string
+    bugReportCopyFailure: string
+    reportIssue: string
+    reportIssueTooltip: string
   }
   regions: Record<RegionID, string>
   factoryRoles: Record<FactoryRole, string>
