@@ -28,16 +28,16 @@ export const fieldTemplates = {
         }
     },
     [FieldTemplateID.WULING_MAIN]: {
-        width: 60,
-        height: 60,
+        width: 80,
+        height: 80,
         region: RegionID.WULING,
         depotBusPortLimit: 1,
-        depotBusSectionLimit: 5,
+        depotBusSectionLimit: 15,
         initialFacilityType: FacilityID.PROTOCOL_AUTOMATION_CORE_PAC,
     },
     [FieldTemplateID.WULING_OUTPOST]: {
-        width: 40,
-        height: 40,
+        width: 50,
+        height: 50,
         region: RegionID.WULING,
         depotBusPortLimit: 1,
         depotBusSectionLimit: 6,
