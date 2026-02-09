@@ -266,8 +266,8 @@ export const facilities: Immutable<Record<FacilityID, Facility>> = {
   },
   [FacilityID.GRINDING_UNIT]: {
     category: FacilityCategory.PRODUCTION_II,
-    width: 3,
-    height: 3,
+    width: 6,
+    height: 4,
     power: 50,
     beltInputs: 'down',
     beltOutputs: 'up',
