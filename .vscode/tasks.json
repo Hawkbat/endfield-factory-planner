@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run fixture placement tests",
+			"type": "shell",
+			"command": "npx vitest run tests/fixture-placement.test.ts",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "test"
+		}
+	]
+}
