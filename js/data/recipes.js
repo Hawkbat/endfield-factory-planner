@@ -650,7 +650,7 @@ export const recipes = {
     },
     [RecipeID.FURNANCE_IRON_ENR_1]: {
         inputs: {
-            [ItemID.FERRIUM_POWDER]: 1
+            [ItemID.DENSE_FERRIUM_POWDER]: 1
         },
         outputs: {
             [ItemID.STEEL]: 1
