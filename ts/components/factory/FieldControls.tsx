@@ -7,9 +7,10 @@ import { useItemSelectors } from "../../contexts/itemSelectors.tsx"
 import { useFixturePlacement } from "../../contexts/fixturePlacement.tsx"
 import { usePathEditing } from "../../contexts/pathEditing.tsx"
 import { useRegionPlan } from "../../contexts/regionPlan.tsx"
+import { useCraftingChain } from "../../contexts/craftingChain.tsx"
 import { EditMode } from "../../types/editMode.ts"
 import { FixtureBehaviorType } from "../../data/pathFixtures.ts"
-import { Undo2, Redo2, Copy, Clipboard, CopyPlus, Trash2, RotateCw, RotateCcw, Plus, Shuffle, Wrench, X, Split, Merge, Droplets, BriefcaseConveyorBelt, Map, Download, Globe } from "lucide-react"
+import { Undo2, Redo2, Copy, Clipboard, CopyPlus, Trash2, RotateCw, RotateCcw, Plus, Shuffle, Wrench, X, Split, Merge, Droplets, BriefcaseConveyorBelt, Map, Download, Globe, BookOpen } from "lucide-react"
 import { PathTypeID } from "../../types/data.ts"
 
 export function FieldControls() {
@@ -33,6 +34,7 @@ export function FieldControls() {
     const { startFixturePlacing, placingBehaviorType, cancelFixturePlacement } = useFixturePlacement()
     const pathEditing = usePathEditing()
     const { openRegionPlan } = useRegionPlan()
+    const { openCraftingChainSelector } = useCraftingChain()
     
     const canDelete = editMode === EditMode.MANIPULATE && selectedIDs.size > 0
     const canPlace = editMode === EditMode.MANIPULATE
@@ -62,6 +64,9 @@ export function FieldControls() {
                 </ActionButton>
                 <ActionButton onClick={exportCurrentProject} disabled={!canExportProject} title={ui.projectExportTooltip}>
                     <Download size={iconSize} /> {ui.projectExport}
+                </ActionButton>
+                <ActionButton onClick={openCraftingChainSelector} title={ui.craftingChainTooltip}>
+                    <BookOpen size={iconSize} /> {ui.craftingChain}
                 </ActionButton>
             </div>
             <div className="field-controls-group">

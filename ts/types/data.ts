@@ -286,6 +286,19 @@ export interface Localization {
     bugReportCopyFailure: string
     reportIssue: string
     reportIssueTooltip: string
+    craftingChain: string
+    craftingChainTooltip: string
+    craftingChainTitle: string
+    craftingChainRawMaterial: string
+    craftingChainSelectRecipe: string
+    craftingChainFacility: string
+    craftingChainSummary: string
+    craftingChainRawMaterials: string
+    craftingChainFacilities: string
+    craftingChainRecipeTime: string
+    craftingChainViewChain: string
+    craftingChainSourcePaths: string
+    craftingChainTotalSourcePaths: string
   }
   regions: Record<RegionID, string>
   factoryRoles: Record<FactoryRole, string>

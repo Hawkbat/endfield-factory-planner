@@ -2,6 +2,7 @@ import type { ItemFlow } from "../../types/field.ts"
 import { useLocalization } from "../../contexts/localization.tsx"
 import type { ItemID } from "../../types/data.ts"
 import { AlertTriangle, ArrowRight, Ban } from "lucide-react"
+import { useCraftingChain } from "../../contexts/craftingChain.tsx"
 
 interface ItemFlowDisplayProps {
     flows: ReadonlyArray<ItemFlow>
@@ -16,6 +17,7 @@ interface ItemFlowDisplayProps {
 
 export function ItemFlowDisplay({ flows, rateKey, direction, rateMultiplier = 1, unitLabel, insufficientFlows, bottleneckItem, overSuppliedFlows }: ItemFlowDisplayProps) {
     const loc = useLocalization()
+    const { openCraftingChain } = useCraftingChain()
     const resolvedUnitLabel = unitLabel ?? loc.ui.itemFlowUnits
 
     if (!flows.length) {
@@ -37,7 +39,9 @@ export function ItemFlowDisplay({ flows, rateKey, direction, rateMultiplier = 1,
                         <img
                             src={`images/${flow.item}.webp`}
                             alt={loc.getItemName(flow.item)}
-                            className="field-hud-item-icon"
+                            className="field-hud-item-icon clickable"
+                            onClick={(e) => { e.stopPropagation(); openCraftingChain(flow.item) }}
+                            title={loc.ui.craftingChainViewChain}
                         />
                         <span>
                             {loc.getItemName(flow.item)} • {(flow[rateKey] * rateMultiplier).toFixed(2)} {resolvedUnitLabel}

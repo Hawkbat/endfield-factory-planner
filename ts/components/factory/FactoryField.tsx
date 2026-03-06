@@ -28,7 +28,9 @@ import { TemplateSelectorModal } from "./TemplateSelectorModal.tsx"
 import { OnboardingModal } from "./OnboardingModal.tsx"
 import { EditModeGuidance } from "./EditModeGuidance.tsx"
 import { RegionPlanModal } from "./RegionPlanModal.tsx"
+import { CraftingChainModal } from "./CraftingChainModal.tsx"
 import { RegionPlanProvider, useRegionPlan } from "../../contexts/regionPlan.tsx"
+import { CraftingChainProvider, useCraftingChain } from "../../contexts/craftingChain.tsx"
 import { resolveFieldTemplate } from "../../data/templates.ts"
 import { loadProject } from "../../utils/projectStorage.ts"
 
@@ -68,6 +70,7 @@ function FieldCanvas({
         importProjectJson,
     } = useEdit()
     const itemSelectors = useItemSelectors()
+    const craftingChain = useCraftingChain()
     const isPanningRef = useRef(false)
     const lastPointRef = useRef({ x: 0, y: 0 })
     const currentMouseGridPointRef = useRef<[number, number]>([0, 0])
@@ -395,6 +398,20 @@ function FieldCanvas({
                     onImportProjectJson={importProjectJson}
                 />
                 <RegionPlanModal />
+                <CraftingChainModal />
+                {craftingChain.isSelectorOpen && (
+                    <ItemSelector
+                        currentItemID={null}
+                        onSelectItem={(itemID) => {
+                            craftingChain.closeCraftingChainSelector()
+                            if (itemID) {
+                                craftingChain.openCraftingChain(itemID)
+                            }
+                        }}
+                        itemFilter={() => true}
+                        allowClear={false}
+                    />
+                )}
             </div>
         </KeyboardShortcutsProvider>
     )
@@ -406,24 +423,26 @@ function FieldViewport() {
     const svgRef = useRef<SVGSVGElement | null>(null)
 
     return (
-        <CopyPasteProvider>
-            <ItemSelectorsProvider>
-                <DraggingProvider
-                    svgRef={svgRef as React.RefObject<SVGSVGElement>}
-                    pan={pan}
-                    zoom={zoom}
-                    cellSize={CELL_SIZE}
-                >
-                    <FieldCanvas 
+        <CraftingChainProvider>
+            <CopyPasteProvider>
+                <ItemSelectorsProvider>
+                    <DraggingProvider
                         svgRef={svgRef as React.RefObject<SVGSVGElement>}
                         pan={pan}
-                        setPan={setPan}
                         zoom={zoom}
-                        setZoom={setZoom}
-                    />
-                </DraggingProvider>
-            </ItemSelectorsProvider>
-        </CopyPasteProvider>
+                        cellSize={CELL_SIZE}
+                    >
+                        <FieldCanvas 
+                            svgRef={svgRef as React.RefObject<SVGSVGElement>}
+                            pan={pan}
+                            setPan={setPan}
+                            zoom={zoom}
+                            setZoom={setZoom}
+                        />
+                    </DraggingProvider>
+                </ItemSelectorsProvider>
+            </CopyPasteProvider>
+        </CraftingChainProvider>
     )
 }
 
