@@ -186,10 +186,6 @@ export function createManualReportDetails(): CapturedErrorDetails {
     }
 }
 
-export function buildManualIssueUrl(): string {
-    return buildIssueUrl()
-}
-
 export function buildIssueUrl(): string {
     return `${ISSUE_BASE_URL}?template=${ISSUE_TEMPLATE_NAME}`
 }

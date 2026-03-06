@@ -98,28 +98,6 @@ export function getConnectedEntity(
 }
 
 /**
- * Get the subType ('input' or 'output') of the entity connected to a path endpoint.
- * @param path Path to check
- * @param endpoint Which endpoint to check ('start' or 'end')
- * @param fieldState Current field state
- * @returns 'input', 'output', 'dynamic', or null if not connected
- */
-export function getConnectedEntitySubType(
-    path: Immutable<FieldPath>,
-    endpoint: 'start' | 'end',
-    fieldState: Immutable<FieldState>
-): 'input' | 'output' | 'dynamic' | null {
-    const connected = getConnectedEntity(path, endpoint, fieldState)
-    if (!connected) return null
-    
-    if ('port' in connected) {
-        return connected.port.subType
-    } else {
-        return connected.side.subType
-    }
-}
-
-/**
  * Preserve user-set properties from old ports when initializing new ports.
  * Matches ports by position and type, preserving setItem for external/selected ports.
  * @param oldPorts Previous port array (may contain user-set properties)
