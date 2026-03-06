@@ -9,6 +9,7 @@ import { facilities } from "../data/facilities.js";
 import { recipes } from "../data/recipes.js";
 import { items } from "../data/items.js";
 import { pathFixtures } from "../data/pathFixtures.js";
+import { resolveFieldTemplate } from "../data/templates.js";
 const ItemSelectorsContext = createContext(null);
 export function useItemSelectors() {
     const context = useContext(ItemSelectorsContext);
@@ -169,7 +170,14 @@ export function ItemSelectorsProvider({ children }) {
     function filterFacilityItems(itemID) {
         const facilityID = itemID;
         const facilityDef = facilities[facilityID];
-        return facilityDef && !facilityDef.notImplementedYet;
+        if (!facilityDef || facilityDef.notImplementedYet)
+            return false;
+        // Filter by region: exclude facilities whose allowedRegions don't include the current region
+        const template = resolveFieldTemplate(fieldState.template);
+        if (facilityDef.allowedRegions && !facilityDef.allowedRegions.includes(template.region)) {
+            return false;
+        }
+        return true;
     }
     function groupFacilityItems(itemID) {
         const facilityID = itemID;
@@ -255,5 +263,5 @@ export function ItemSelectorsProvider({ children }) {
         handleFacilityRecipeClick,
         handlePlace
     };
-    return (_jsxDEV(ItemSelectorsContext.Provider, { value: value, children: children }, void 0, false, { fileName: _jsxFileName, lineNumber: 341, columnNumber: 13 }, this));
+    return (_jsxDEV(ItemSelectorsContext.Provider, { value: value, children: children }, void 0, false, { fileName: _jsxFileName, lineNumber: 350, columnNumber: 13 }, this));
 }

@@ -10,6 +10,8 @@ import { objectValues } from "../utils/types.js";
 import { ROTATE_RIGHT_MAP } from "./directions.js";
 import { recipes } from "../data/recipes.js";
 import { applyTemplateValidation } from "./templateRules.js";
+import { FacilityID } from "../types/data.js";
+import { resolveFieldTemplate } from "../data/templates.js";
 export function recalculateFieldState(fieldState, changes) {
     let currentState = fieldState;
     // Step 1: Apply all user changes sequentially
@@ -43,12 +45,14 @@ export function recalculateFieldState(fieldState, changes) {
         pathFixtures: fixturesWithErrors
     };
     // Step 3: Initialize/update facility ports from definitions
+    const template = resolveFieldTemplate(currentState.template);
+    const regionID = template.region;
     const facilitiesWithPorts = currentState.facilities.map(facility => {
         // Ports are already initialized in change handlers, but ensure they're up to date
         if (facility.ports.length === 0) {
             return {
                 ...facility,
-                ports: initializeFacilityPorts(facility)
+                ports: initializeFacilityPorts(facility, regionID)
             };
         }
         return facility;
@@ -136,6 +140,31 @@ export function recalculateFieldState(fieldState, changes) {
     const worldInputFlowArrays = [];
     const worldOutputFlowArrays = [];
     for (const facility of currentState.facilities) {
+        // Protocol Stash sends excess input flows to the depot.
+        // When no outputs are connected, outputFlows contains the full depot-bound amount.
+        // When outputs are connected, outputFlows includes both port outputs and depot excess;
+        // subtract port output flows to get the depot-only portion.
+        if (facility.type === FacilityID.PROTOCOL_STASH && facility.outputFlows.length > 0) {
+            const portOutputTotal = new Map();
+            for (const port of facility.ports) {
+                if (port.subType === 'output' && port.connectedPathID) {
+                    for (const flow of port.flows) {
+                        portOutputTotal.set(flow.item, (portOutputTotal.get(flow.item) ?? 0) + flow.sourceRate);
+                    }
+                }
+            }
+            const depotFlows = [];
+            for (const flow of facility.outputFlows) {
+                const portRate = portOutputTotal.get(flow.item) ?? 0;
+                const depotRate = flow.sourceRate - portRate;
+                if (depotRate > 0.0001) {
+                    depotFlows.push({ item: flow.item, sourceRate: depotRate, sinkRate: depotRate });
+                }
+            }
+            if (depotFlows.length > 0) {
+                depotOutputFlowArrays.push(depotFlows);
+            }
+        }
         for (const port of facility.ports) {
             if (port.external === 'depot') {
                 if (port.subType === 'output') {
@@ -201,149 +230,5 @@ export function recalculateFieldState(fieldState, changes) {
         ...currentState,
         facilities: facilitiesWithSimErrors,
         debugInfo
-    };
-}
-export function updateFacilityPosition(facility, x, y) {
-    if (facility.x === x && facility.y === y) {
-        return facility;
-    }
-    return {
-        ...facility,
-        x,
-        y,
-        // Clear computed state to be recalculated
-        ports: facility.ports.map(port => ({
-            ...port,
-            connectedPathID: null,
-            flows: [],
-        })),
-        isPowered: false,
-        inputFlows: [],
-        outputFlows: [],
-        actualRecipe: null,
-    };
-}
-export function updateFacilityRotation(facility, rotation) {
-    if (facility.rotation === rotation) {
-        return facility;
-    }
-    // Adjust facility dimensions and port positions based on difference in rotation (always in 90-degree increments)
-    const deltaRotation = (rotation - facility.rotation + 360) % 360;
-    const deltaRotationSteps = Math.round(deltaRotation / 90);
-    const swapWidthHeight = deltaRotation === 90 || deltaRotation === 270;
-    // Store original dimensions before swapping for port rotation calculations
-    const originalWidth = facility.width;
-    const originalHeight = facility.height;
-    return {
-        ...facility,
-        rotation,
-        width: swapWidthHeight ? facility.height : facility.width,
-        height: swapWidthHeight ? facility.width : facility.height,
-        ports: facility.ports.map(port => {
-            let direction = port.direction;
-            let x = port.x;
-            let y = port.y;
-            for (let i = 0; i < deltaRotationSteps; i++) {
-                direction = ROTATE_RIGHT_MAP[direction];
-                // Rotate x and y 90 degrees clockwise (they are relative to the top-left corner of the facility)
-                const oldX = x;
-                const oldY = y;
-                // When rotating 90° clockwise: new_x = old_y, new_y = width - 1 - old_x
-                // Use the dimensions from before this rotation step
-                const currentWidth = (i % 2 === 0) ? originalWidth : originalHeight;
-                x = oldY;
-                y = currentWidth - 1 - oldX;
-            }
-            return {
-                ...port,
-                x,
-                y,
-                direction: direction,
-                // Clear computed state to be recalculated
-                connectedPathID: null,
-                flows: [],
-            };
-        }),
-        // Clear computed state to be recalculated
-        isPowered: false,
-        inputFlows: [],
-        outputFlows: [],
-        actualRecipe: null,
-    };
-}
-export function updateFacilityPoweredState(facility, fieldState) {
-    let isPowered = false;
-    const facilityDef = facilities[facility.type];
-    if (!facilityDef.power) {
-        // Facility does not require power
-        isPowered = true;
-    }
-    else {
-        fieldState.facilities.find(f => {
-            const fDef = facilities[f.type];
-            if (!fDef.powerArea) {
-                return false;
-            }
-            // Check if this facility overlaps the power area
-            var centerX = f.x + f.width / 2;
-            var centerY = f.y + f.height / 2;
-            var powerMinX = centerX - fDef.powerArea.width / 2;
-            var powerMaxX = centerX + fDef.powerArea.width / 2;
-            var powerMinY = centerY - fDef.powerArea.height / 2;
-            var powerMaxY = centerY + fDef.powerArea.height / 2;
-            var facilityMinX = facility.x;
-            var facilityMaxX = facility.x + facility.width - 1;
-            var facilityMinY = facility.y;
-            var facilityMaxY = facility.y + facility.height - 1;
-            if (powerMinX <= facilityMaxX && powerMaxX >= facilityMinX && powerMinY <= facilityMaxY && powerMaxY >= facilityMinY) {
-                isPowered = true;
-                return true;
-            }
-            return false;
-        });
-    }
-    if (facility.isPowered === isPowered) {
-        return facility;
-    }
-    return {
-        ...facility,
-        isPowered,
-    };
-}
-export function updateFacilityPathConnections(facility, fieldState) {
-    const updatedPorts = facility.ports.map(port => {
-        // Find a path that connects to this port
-        const portX = facility.x + port.x;
-        const portY = facility.y + port.y;
-        const connectedPath = fieldState.paths.find(path => {
-            // Start or end point matches port position
-            const startPoint = path.points[0];
-            const endPoint = path.points[path.points.length - 1];
-            return (startPoint[0] === portX && startPoint[1] === portY) || (endPoint[0] === portX && endPoint[1] === portY);
-        });
-        if (connectedPath) {
-            return {
-                ...port,
-                connectedPathID: connectedPath.id,
-                // Clear flows to be recalculated
-                flows: [],
-            };
-        }
-        else {
-            return {
-                ...port,
-                connectedPathID: null,
-                // Clear flows to be recalculated
-                flows: [],
-            };
-        }
-    });
-    return {
-        ...facility,
-        ports: updatedPorts,
-        // Clear computed state to be recalculated
-        inputFlows: [],
-        outputFlows: [],
-        actualRecipe: null,
     };
 }

@@ -69,6 +69,90 @@ export function initializeFlowState(fieldState) {
         pathFixtures: initializedFixtures
     };
 }
+/**
+ * Distribute Protocol Stash flows: pass through all input flows to connected
+ * output ports, with any excess (input that can't leave through outputs) being
+ * implicitly routed to the depot.
+ *
+ * When no outputs are connected every input flow is flagged as depot‐bound by
+ * storing it on the facility's outputFlows while keeping output port flows empty.
+ */
+function distributeProtocolStashFlows(facility) {
+    // Aggregate all input flows by item
+    const inputFlowMap = new Map();
+    for (const port of facility.ports) {
+        if (port.subType === 'input') {
+            for (const flow of port.flows) {
+                inputFlowMap.set(flow.item, (inputFlowMap.get(flow.item) ?? 0) + flow.sinkRate);
+            }
+        }
+    }
+    if (inputFlowMap.size === 0) {
+        // Nothing flowing in – clear outputs
+        return {
+            ...facility,
+            ports: facility.ports.map(port => port.subType === 'output' ? { ...port, flows: [] } : port),
+            outputFlows: [],
+        };
+    }
+    const connectedOutputPorts = facility.ports.filter(port => port.subType === 'output' && port.connectedPathID);
+    if (connectedOutputPorts.length === 0) {
+        // Common shortcut: no outputs connected → everything goes to depot.
+        // Store total input as the facility's outputFlows so field.ts can pick it up.
+        const depotFlows = [];
+        for (const [item, rate] of inputFlowMap) {
+            depotFlows.push({ item, sourceRate: rate, sinkRate: rate });
+        }
+        return {
+            ...facility,
+            ports: facility.ports.map(port => port.subType === 'output' ? { ...port, flows: [] } : port),
+            outputFlows: depotFlows,
+        };
+    }
+    // Distribute input evenly across connected output ports
+    const perPortFlows = [];
+    for (const [item, rate] of inputFlowMap) {
+        const perPort = rate / connectedOutputPorts.length;
+        perPortFlows.push({ item, sourceRate: perPort, sinkRate: perPort });
+    }
+    const updatedPorts = facility.ports.map(port => {
+        if (port.subType === 'output' && port.connectedPathID) {
+            return { ...port, flows: perPortFlows };
+        }
+        if (port.subType === 'output') {
+            return { ...port, flows: [] };
+        }
+        return port;
+    });
+    // Total output through ports
+    const totalOutputRate = new Map();
+    for (const port of updatedPorts) {
+        if (port.subType === 'output' && port.connectedPathID) {
+            for (const flow of port.flows) {
+                totalOutputRate.set(flow.item, (totalOutputRate.get(flow.item) ?? 0) + flow.sinkRate);
+            }
+        }
+    }
+    // Depot gets the excess (may be further adjusted after path throughput limiting in later iterations)
+    const depotFlows = [];
+    for (const [item, inputRate] of inputFlowMap) {
+        const outputRate = totalOutputRate.get(item) ?? 0;
+        const excess = inputRate - outputRate;
+        if (excess > 0.0001) {
+            depotFlows.push({ item, sourceRate: excess, sinkRate: excess });
+        }
+    }
+    // Facility outputFlows = port outputs + depot excess
+    const allOutputFlows = mergeItemFlows([
+        perPortFlows.length > 0 ? Array.from({ length: connectedOutputPorts.length }, () => perPortFlows).flat() : [],
+        depotFlows,
+    ]);
+    return {
+        ...facility,
+        ports: updatedPorts,
+        outputFlows: allOutputFlows,
+    };
+}
 function distributeReactorCrucibleOutputs(facility, outputs) {
     const availableByItem = new Map();
     for (const flow of outputs) {
@@ -144,6 +228,10 @@ export function propagateFlowsOneIteration(state) {
     };
     // Step 1: Update facility outputs based on current inputs
     const updatedFacilities = updatedState.facilities.map(facility => {
+        // Protocol Stash: pass-through with depot overflow (no recipe needed)
+        if (facility.type === FacilityID.PROTOCOL_STASH) {
+            return distributeProtocolStashFlows(facility);
+        }
         if (!facility.actualRecipe || !facility.isPowered) {
             // No recipe or not powered, no output
             const facilityWithOutputs = distributeFacilityOutputs([], facility);

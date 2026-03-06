@@ -55,46 +55,6 @@ export function calculateFacilityThrottleFactor(facility, recipe) {
     return Math.max(0, Math.min(1.0, minRatio));
 }
 /**
- * Calculate input flows for a facility based on connected paths.
- * @param facility Facility to calculate for
- * @param fieldState Current field state
- * @returns Array of aggregated input flows
- */
-export function calculateFacilityInputFlows(facility, fieldState) {
-    const flowMap = new Map();
-    // Aggregate flows from all input ports
-    for (const port of facility.ports) {
-        if (port.subType === 'input' && port.connectedPathID) {
-            const path = fieldState.paths.find(p => p.id === port.connectedPathID);
-            if (path) {
-                for (const flow of path.flows) {
-                    const existing = flowMap.get(flow.item);
-                    if (existing) {
-                        existing.sourceRate += flow.sourceRate;
-                        existing.sinkRate += flow.sinkRate;
-                    }
-                    else {
-                        flowMap.set(flow.item, {
-                            sourceRate: flow.sourceRate,
-                            sinkRate: flow.sinkRate
-                        });
-                    }
-                }
-            }
-        }
-    }
-    // Convert map to array
-    const flows = [];
-    for (const [item, rates] of flowMap.entries()) {
-        flows.push({
-            item,
-            sourceRate: rates.sourceRate,
-            sinkRate: rates.sinkRate
-        });
-    }
-    return flows;
-}
-/**
  * Calculate output flows for a facility based on its recipe and throttle factor.
  * @param facility Facility to calculate for
  * @param recipe Recipe being used

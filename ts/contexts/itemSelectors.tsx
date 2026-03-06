@@ -8,6 +8,7 @@ import { facilities } from "../data/facilities.ts"
 import { recipes } from "../data/recipes.ts"
 import { items } from "../data/items.ts"
 import { pathFixtures } from "../data/pathFixtures.ts"
+import { resolveFieldTemplate } from "../data/templates.ts"
 
 interface ItemSelectorsContextValue {
     // Control port item selector
@@ -246,7 +247,15 @@ export function ItemSelectorsProvider({ children }: ItemSelectorsProviderProps) 
     function filterFacilityItems(itemID: ItemID): boolean {
         const facilityID = itemID as string as FacilityID
         const facilityDef = facilities[facilityID]
-        return facilityDef && !facilityDef.notImplementedYet
+        if (!facilityDef || facilityDef.notImplementedYet) return false
+
+        // Filter by region: exclude facilities whose allowedRegions don't include the current region
+        const template = resolveFieldTemplate(fieldState.template)
+        if (facilityDef.allowedRegions && !facilityDef.allowedRegions.includes(template.region)) {
+            return false
+        }
+
+        return true
     }
     
     function groupFacilityItems(itemID: ItemID): string {

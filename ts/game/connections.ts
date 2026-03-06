@@ -1,4 +1,4 @@
-import type { Direction } from "../types/data.ts"
+import { type Direction, RegionID } from "../types/data.ts"
 import type { FieldState, FieldFacility, FieldFacilityPort, FieldPath, FieldPathFixture, FieldPathFixtureSide, EntityConnectionRef } from "../types/field.ts"
 import { calculatePathEndpointDirection } from "./directions.ts"
 import { getOppositeDirection, rotateDirection } from "./directions.ts"
@@ -98,28 +98,6 @@ export function getConnectedEntity(
 }
 
 /**
- * Get the subType ('input' or 'output') of the entity connected to a path endpoint.
- * @param path Path to check
- * @param endpoint Which endpoint to check ('start' or 'end')
- * @param fieldState Current field state
- * @returns 'input', 'output', 'dynamic', or null if not connected
- */
-export function getConnectedEntitySubType(
-    path: Immutable<FieldPath>,
-    endpoint: 'start' | 'end',
-    fieldState: Immutable<FieldState>
-): 'input' | 'output' | 'dynamic' | null {
-    const connected = getConnectedEntity(path, endpoint, fieldState)
-    if (!connected) return null
-    
-    if ('port' in connected) {
-        return connected.port.subType
-    } else {
-        return connected.side.subType
-    }
-}
-
-/**
  * Preserve user-set properties from old ports when initializing new ports.
  * Matches ports by position and type, preserving setItem for external/selected ports.
  * @param oldPorts Previous port array (may contain user-set properties)
@@ -150,15 +128,22 @@ export function preservePortProperties(
 
 /**
  * Initialize facility ports from facility definition.
+ * When a regionID is provided, pipe ports whose facility definition specifies
+ * pipePortsAllowedRegions are excluded if the region is not in that list.
  * @param facility Facility to initialize ports for
- * @param facilityDef Facility type definition
+ * @param regionID Current region (optional) – used to filter region-exclusive pipe ports
  * @returns Array of initialized ports
  */
-export function initializeFacilityPorts(facility: Immutable<FieldFacility>): Immutable<FieldFacilityPort>[] {
+export function initializeFacilityPorts(facility: Immutable<FieldFacility>, regionID?: RegionID): Immutable<FieldFacilityPort>[] {
     const facilityDef = facilities[facility.type]
     const ports: Immutable<FieldFacilityPort>[] = []
     const originalWidth = facilityDef.width
     const originalHeight = facilityDef.height
+
+    // Determine whether pipe ports are allowed in this region
+    const pipePortsAllowed = !facilityDef.pipePortsAllowedRegions
+        || !regionID
+        || facilityDef.pipePortsAllowedRegions.includes(regionID)
 
     const rotatePort = (
         x: number,
@@ -267,13 +252,19 @@ export function initializeFacilityPorts(facility: Immutable<FieldFacility>): Imm
     // Create ports from facility definition
     createPortsFromSide(facilityDef.beltInputs, 'belt', 'input')
     createPortsFromSide(facilityDef.beltOutputs, 'belt', 'output')
-    createPortsFromSide(facilityDef.pipeInputs, 'pipe', 'input')
-    createPortsFromSide(facilityDef.pipeOutputs, 'pipe', 'output')
+    if (pipePortsAllowed) {
+        createPortsFromSide(facilityDef.pipeInputs, 'pipe', 'input')
+        createPortsFromSide(facilityDef.pipeOutputs, 'pipe', 'output')
+    }
     createPortsFromSide(facilityDef.depotInputs, 'belt', 'input', 'depot')
     createPortsFromSide(facilityDef.depotOutputs, 'belt', 'output', 'depot')
     if (facilityDef.ports) {
         for (const port of facilityDef.ports) {
             const [x, y, direction, type, subType, external] = port
+            // Skip pipe ports from explicit port list when region disallows them
+            if (type === 'pipe' && !pipePortsAllowed) {
+                continue
+            }
             const rotatedPort = rotatePort(x, y, direction)
             ports.push({
                 type,

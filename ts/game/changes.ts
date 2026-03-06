@@ -3,6 +3,7 @@ import { initializeFacilityPorts, initializeFixtureSides, preservePortProperties
 import { facilities } from "../data/facilities.ts"
 import { tuple, type Immutable } from "../utils/types.ts"
 import { validateFixturePlacementOnPath, reconnectPathsAfterFixtureRemoval } from "./fixtures.ts"
+import { resolveFieldTemplate } from "../data/templates.ts"
 
 /**
  * Generate a unique ID for a new entity.
@@ -124,9 +125,10 @@ export function applyAddFacility(
         outputFlows: []
     }
     
+    const regionID = resolveFieldTemplate(fieldState.template).region
     const newFacility: Immutable<FieldFacility> = {
         ...newFacilityBase,
-        ports: initializeFacilityPorts(newFacilityBase)
+        ports: initializeFacilityPorts(newFacilityBase, regionID)
     }
     
     return {
@@ -195,7 +197,8 @@ export function applyRotateFacility(
                 jumpStartRecipe: facility.jumpStartRecipe
             }
             
-            const newPorts = initializeFacilityPorts(rotatedFacilityBase)
+            const regionID = resolveFieldTemplate(fieldState.template).region
+            const newPorts = initializeFacilityPorts(rotatedFacilityBase, regionID)
             
             return {
                 ...rotatedFacilityBase,

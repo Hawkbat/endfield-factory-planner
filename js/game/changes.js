@@ -2,6 +2,7 @@ import { initializeFacilityPorts, initializeFixtureSides, preservePortProperties
 import { facilities } from "../data/facilities.js";
 import { tuple } from "../utils/types.js";
 import { validateFixturePlacementOnPath, reconnectPathsAfterFixtureRemoval } from "./fixtures.js";
+import { resolveFieldTemplate } from "../data/templates.js";
 /**
  * Generate a unique ID for a new entity.
  * @param prefix Prefix for the ID
@@ -107,9 +108,10 @@ export function applyAddFacility(fieldState, change) {
         inputFlows: [],
         outputFlows: []
     };
+    const regionID = resolveFieldTemplate(fieldState.template).region;
     const newFacility = {
         ...newFacilityBase,
-        ports: initializeFacilityPorts(newFacilityBase)
+        ports: initializeFacilityPorts(newFacilityBase, regionID)
     };
     return {
         ...fieldState,
@@ -166,7 +168,8 @@ export function applyRotateFacility(fieldState, change) {
                 setRecipe: facility.setRecipe,
                 jumpStartRecipe: facility.jumpStartRecipe
             };
-            const newPorts = initializeFacilityPorts(rotatedFacilityBase);
+            const regionID = resolveFieldTemplate(fieldState.template).region;
+            const newPorts = initializeFacilityPorts(rotatedFacilityBase, regionID);
             return {
                 ...rotatedFacilityBase,
                 ports: preservePortProperties(facility.ports, newPorts)

@@ -27,9 +27,9 @@ export function calculatePowerArea(facility) {
  */
 export function isFacilityInPowerArea(facility, powerArea) {
     const facilityMinX = facility.x;
-    const facilityMaxX = facility.x + facility.width - 1;
+    const facilityMaxX = facility.x + facility.width;
     const facilityMinY = facility.y;
-    const facilityMaxY = facility.y + facility.height - 1;
+    const facilityMaxY = facility.y + facility.height;
     // Check if there's area overlap (not just edge touching)
     // Overlap exists if ranges intersect
     const xOverlap = facilityMinX < powerArea.maxX && facilityMaxX > powerArea.minX;

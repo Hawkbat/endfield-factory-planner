@@ -140,9 +140,6 @@ export function createManualReportDetails() {
         ...env,
     };
 }
-export function buildManualIssueUrl() {
-    return buildIssueUrl();
-}
 export function buildIssueUrl() {
     return `${ISSUE_BASE_URL}?template=${ISSUE_TEMPLATE_NAME}`;
 }

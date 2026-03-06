@@ -11,15 +11,6 @@ export function definePorts(startX: number, startY: number, width: number, heigh
   return ports
 }
 
-export function defineSidePorts(facility: Facility, side: Direction): FacilityPortMinimal[] {
-  switch (side) {
-    case 'up': return definePorts(0, 0, facility.width, 1, 'up')
-    case 'down': return definePorts(0, facility.height - 1, facility.width, 1, 'down')
-    case 'left': return definePorts(0, 0, 1, facility.height, 'left')
-    case 'right': return definePorts(facility.width - 1, 0, 1, facility.height, 'right')
-  }
-}
-
 export const facilities: Immutable<Record<FacilityID, Facility>> = {
   [FacilityID.FITTING_UNIT]: {
     category: FacilityCategory.PRODUCTION_I,
@@ -55,7 +46,7 @@ export const facilities: Immutable<Record<FacilityID, Facility>> = {
     beltInputs: 'down',
     beltOutputs: 'up',
     pipeInputs: [[5, 2, 'right']],
-    allowedRegions: [RegionID.WULING],
+    pipePortsAllowedRegions: [RegionID.WULING],
   },
   [FacilityID.REFINING_UNIT]: {
     category: FacilityCategory.PRODUCTION_I,

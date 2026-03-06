@@ -40,9 +40,9 @@ export function isFacilityInPowerArea(
     powerArea: { minX: number, maxX: number, minY: number, maxY: number }
 ): boolean {
     const facilityMinX = facility.x
-    const facilityMaxX = facility.x + facility.width - 1
+    const facilityMaxX = facility.x + facility.width
     const facilityMinY = facility.y
-    const facilityMaxY = facility.y + facility.height - 1
+    const facilityMaxY = facility.y + facility.height
     
     // Check if there's area overlap (not just edge touching)
     // Overlap exists if ranges intersect
