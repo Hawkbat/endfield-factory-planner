@@ -55,7 +55,7 @@ export const facilities: Immutable<Record<FacilityID, Facility>> = {
     beltInputs: 'down',
     beltOutputs: 'up',
     pipeInputs: [[5, 2, 'right']],
-    allowedRegions: [RegionID.WULING],
+    pipePortsAllowedRegions: [RegionID.WULING],
   },
   [FacilityID.REFINING_UNIT]: {
     category: FacilityCategory.PRODUCTION_I,

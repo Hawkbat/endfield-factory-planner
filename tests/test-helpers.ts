@@ -60,6 +60,7 @@ export function createFacility(options: {
     ports?: FieldFacilityPort[]
     inputFlows?: ItemFlow[]
     outputFlows?: ItemFlow[]
+    regionID?: RegionID
 }): FieldFacility {
     const facilityDef = facilities[options.type]
     if (!facilityDef) {
@@ -85,7 +86,7 @@ export function createFacility(options: {
         outputFlows: options.outputFlows ?? []
     }
 
-    const initializedPorts = initializeFacilityPorts(base).map(port => ({
+    const initializedPorts = initializeFacilityPorts(base, options.regionID).map(port => ({
         ...port,
         flows: [...port.flows]
     }))

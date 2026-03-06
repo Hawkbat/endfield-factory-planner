@@ -222,20 +222,16 @@ export function applyTemplateValidation(fieldState: Immutable<FieldState>): Immu
     const facilitiesWithTemplateErrors = fieldState.facilities.map(facility => {
         const facilityDef = facilities[facility.type]
         const allowedRegions = facilityDef?.allowedRegions
-        const pipePortAllowedRegions = facilityDef?.pipePortsAllowedRegions
 
         const regionAllowed = !allowedRegions || allowedRegions.includes(template.region)
-        const pipePortsAllowed = !pipePortAllowedRegions || pipePortAllowedRegions.includes(template.region)
 
         const isDepotBusPort = facility.type === FacilityID.DEPOT_BUS_PORT
         const isDepotBusSection = facility.type === FacilityID.DEPOT_BUS_SECTION
         const busWithinLimit = (!isDepotBusPort && !isDepotBusSection)
             || (isDepotBusPort && allowedBusPortIds.has(facility.id))
             || (isDepotBusSection && allowedBusSectionIds.has(facility.id))
-
-        const hasPipePorts = Boolean(facilityDef?.pipeInputs || facilityDef?.pipeOutputs || facilityDef?.ports?.some(port => port[3] === 'pipe'))
-
-        const invalidTemplate = !regionAllowed || !busWithinLimit || (hasPipePorts && !pipePortsAllowed)
+        
+        const invalidTemplate = !regionAllowed || !busWithinLimit
         const invalidDepotBusConnection = facilityDef?.depotBusConnectionSide
             ? !isFacilityAdjacentToDepotBus(facility, fieldState, template, validBusFacilities)
             : false
