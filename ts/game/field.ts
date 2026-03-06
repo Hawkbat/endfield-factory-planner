@@ -11,6 +11,8 @@ import type { FieldState, UserChange, DebugInfo, ItemFlow, FieldFacility } from 
 import { ROTATE_RIGHT_MAP } from "./directions.ts"
 import { recipes } from "../data/recipes.ts"
 import { applyTemplateValidation } from "./templateRules.ts"
+import { FacilityID } from "../types/data.ts"
+import { resolveFieldTemplate } from "../data/templates.ts"
 
 export function recalculateFieldState(fieldState: Immutable<FieldState>, changes: UserChange[]): Immutable<FieldState> {
     let currentState = fieldState
@@ -50,12 +52,14 @@ export function recalculateFieldState(fieldState: Immutable<FieldState>, changes
     }
     
     // Step 3: Initialize/update facility ports from definitions
+    const template = resolveFieldTemplate(currentState.template)
+    const regionID = template.region
     const facilitiesWithPorts = currentState.facilities.map(facility => {
         // Ports are already initialized in change handlers, but ensure they're up to date
         if (facility.ports.length === 0) {
             return {
                 ...facility,
-                ports: initializeFacilityPorts(facility)
+                ports: initializeFacilityPorts(facility, regionID)
             }
         }
         return facility
@@ -168,6 +172,32 @@ export function recalculateFieldState(fieldState: Immutable<FieldState>, changes
     const worldOutputFlowArrays: Immutable<ItemFlow[]>[] = []
     
     for (const facility of currentState.facilities) {
+        // Protocol Stash sends excess input flows to the depot.
+        // When no outputs are connected, outputFlows contains the full depot-bound amount.
+        // When outputs are connected, outputFlows includes both port outputs and depot excess;
+        // subtract port output flows to get the depot-only portion.
+        if (facility.type === FacilityID.PROTOCOL_STASH && facility.outputFlows.length > 0) {
+            const portOutputTotal = new Map<ItemFlow['item'], number>()
+            for (const port of facility.ports) {
+                if (port.subType === 'output' && port.connectedPathID) {
+                    for (const flow of port.flows) {
+                        portOutputTotal.set(flow.item, (portOutputTotal.get(flow.item) ?? 0) + flow.sourceRate)
+                    }
+                }
+            }
+            const depotFlows: Immutable<ItemFlow>[] = []
+            for (const flow of facility.outputFlows) {
+                const portRate = portOutputTotal.get(flow.item) ?? 0
+                const depotRate = flow.sourceRate - portRate
+                if (depotRate > 0.0001) {
+                    depotFlows.push({ item: flow.item, sourceRate: depotRate, sinkRate: depotRate })
+                }
+            }
+            if (depotFlows.length > 0) {
+                depotOutputFlowArrays.push(depotFlows)
+            }
+        }
+
         for (const port of facility.ports) {
             if (port.external === 'depot') {
                 if (port.subType === 'output') {
